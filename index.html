@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReelWave | 영화 추천 플랫폼</title>
+  <style>
+    :root {
+      --bg: #06080f;
+      --bg-2: #0b1020;
+      --panel: rgba(15, 20, 33, 0.9);
+      --panel-2: rgba(22, 29, 46, 0.96);
+      --text: #f5f7fb;
+      --muted: #96a0b2;
+      --line: rgba(255, 255, 255, 0.09);
+      --accent: #ff4d5a;
+      --accent-2: #ff8b3d;
+      --accent-3: #7c5cff;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --container: 1180px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: Inter, "Segoe UI", Roboto, "Noto Sans KR", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255, 77, 90, 0.18), transparent 32%),
+        radial-gradient(circle at 86% 20%, rgba(124, 92, 255, 0.16), transparent 26%),
+        radial-gradient(circle at 50% 120%, rgba(255, 139, 61, 0.12), transparent 30%),
+        linear-gradient(180deg, #04060b 0%, var(--bg) 44%, #04060b 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .app {
+      position: relative;
+      isolation: isolate;
+    }
+
+    .app::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      background-size: 72px 72px;
+      opacity: 0.34;
+      mask-image: linear-gradient(180deg, rgba(0,0,0,0.72), transparent 92%);
+      z-index: -1;
+    }
+
+    .container {
+      width: min(calc(100% - 32px), var(--container));
+      margin: 0 auto;
+    }
+
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      backdrop-filter: blur(22px);
+      background: linear-gradient(180deg, rgba(4, 7, 13, 0.94), rgba(4, 7, 13, 0.56));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .navbar-inner {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 0 2px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background:
+        radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.4), transparent 32%),
+        linear-gradient(145deg, var(--accent), var(--accent-2));
+      position: relative;
+      box-shadow: 0 10px 24px rgba(255, 77, 90, 0.28);
+    }
+
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      inset: 11px 10px 11px 14px;
+      border-left: 8px solid rgba(255, 255, 255, 0.94);
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+    }
+
+    .brand small {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      color: rgba(245, 247, 251, 0.82);
+      font-size: 0.96rem;
+    }
+
+    .nav-links a {
+      position: relative;
+      padding: 10px 0;
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 4px;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform 0.22s ease;
+    }
+
+    .nav-links a:hover,
+    .nav-links a:focus-visible {
+      color: #fff;
+    }
+
+    .nav-links a:hover::after,
+    .nav-links a:focus-visible::after {
+      transform: scaleX(1);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .search-pill,
+    .ghost-btn,
+    .solid-btn,
+    .chip {
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text);
+    }
+
+    .search-pill {
+      min-width: 260px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 16px;
+      color: var(--muted);
+    }
+
+    .search-pill input {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+    }
+
+    .search-pill input::placeholder { color: #7d8899; }
+
+    .ghost-btn,
+    .solid-btn,
+    .chip {
+      padding: 11px 16px;
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .solid-btn {
+      border: 0;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      font-weight: 700;
+      box-shadow: 0 14px 30px rgba(255, 77, 90, 0.24);
+    }
+
+    .ghost-btn:hover,
+    .ghost-btn:focus-visible,
+    .solid-btn:hover,
+    .solid-btn:focus-visible,
+    .chip:hover,
+    .chip:focus-visible {
+      transform: translateY(-2px);
+    }
+
+    .hero {
+      padding: 34px 0 26px;
+    }
+
+    .hero-banner {
+      position: relative;
+      overflow: hidden;
+      min-height: 600px;
+      border-radius: calc(var(--radius-xl) + 4px);
+      padding: clamp(28px, 4vw, 54px);
+      display: grid;
+      align-items: end;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background:
+        radial-gradient(circle at 16% 16%, rgba(255, 255, 255, 0.18), transparent 18%),
+        radial-gradient(circle at 80% 20%, rgba(255, 77, 90, 0.24), transparent 24%),
+        linear-gradient(120deg, rgba(5, 8, 15, 0.86), rgba(5, 8, 15, 0.34)),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1800' height='1000' viewBox='0 0 1800 1000'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop stop-color='%23070b14'/%3E%3Cstop offset='1' stop-color='%23141f36'/%3E%3C/linearGradient%3E%3Cfilter id='blur'%3E%3CfeGaussianBlur stdDeviation='12'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='1800' height='1000' fill='url(%23g)'/%3E%3Cg filter='url(%23blur)' opacity='.88'%3E%3Ccircle cx='280' cy='220' r='190' fill='%23ff4d5a'/%3E%3Ccircle cx='1460' cy='180' r='220' fill='%237c5cff'/%3E%3Ccircle cx='1180' cy='760' r='280' fill='%23ff8b3d'/%3E%3C/g%3E%3Cg opacity='.22'%3E%3Cpath d='M0 780c220-120 370-90 560 0s380 110 600 20 430-110 640 0v220H0z' fill='%23ffffff'/%3E%3C/g%3E%3C/svg%3E") center/cover;
+    }
+
+    .hero-banner::after {
+      content: "";
+      position: absolute;
+      inset: auto -10% -24% -10%;
+      height: 42%;
+      background: radial-gradient(circle, rgba(6, 8, 15, 0.12), rgba(6, 8, 15, 0.9) 72%);
+      pointer-events: none;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 18px;
+      max-width: 760px;
+      animation: rise 0.8s ease both;
+    }
+
+    .eyebrow {
+      width: fit-content;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: rgba(245, 247, 251, 0.88);
+      backdrop-filter: blur(12px);
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 0 6px rgba(255, 77, 90, 0.12);
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(2.8rem, 7.5vw, 5.8rem);
+      line-height: 0.94;
+      letter-spacing: -0.05em;
+      max-width: 12ch;
+      text-wrap: balance;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 64ch;
+      color: rgba(245, 247, 251, 0.82);
+      font-size: clamp(1rem, 2vw, 1.12rem);
+      line-height: 1.76;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+      max-width: 560px;
+    }
+
+    .stat {
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: rgba(8, 12, 21, 0.56);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+    }
+
+    .stat strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 1.18rem;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.93rem;
+      line-height: 1.45;
+    }
+
+    .section { padding: 30px 0; }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: clamp(1.35rem, 3vw, 2rem);
+      letter-spacing: -0.03em;
+    }
+
+    .section-head p {
+      margin: 0;
+      max-width: 56ch;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      color: rgba(245, 247, 251, 0.88);
+    }
+
+    .chip.is-active {
+      border-color: rgba(255, 77, 90, 0.5);
+      background: rgba(255, 77, 90, 0.14);
+      box-shadow: inset 0 0 0 1px rgba(255, 77, 90, 0.12);
+    }
+
+    .movie-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      min-height: 332px;
+      border-radius: var(--radius-lg);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 28%),
+        var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+      transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease, background 0.24s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 28%),
+        var(--panel-2);
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.42);
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    .poster {
+      position: relative;
+      min-height: 168px;
+      padding: 18px;
+      display: flex;
+      align-items: flex-end;
+      background: var(--poster, linear-gradient(135deg, #273449, #111826));
+    }
+
+    .poster::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 30%, rgba(6, 8, 15, 0.94));
+    }
+
+    .poster-content {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(6, 8, 15, 0.5);
+      color: #fff;
+      font-size: 0.82rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .poster-title {
+      margin-top: 14px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .poster-title strong {
+      font-size: 1.12rem;
+      letter-spacing: -0.02em;
+    }
+
+    .poster-title span {
+      color: rgba(245, 247, 251, 0.78);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .card-body {
+      padding: 16px 16px 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .meta-pill {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .card-body p {
+      margin: 0;
+      color: rgba(245, 247, 251, 0.76);
+      line-height: 1.68;
+      font-size: 0.95rem;
+    }
+
+    .rating-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .rating {
+      color: #ffd36d;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .genre-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr 0.9fr;
+      gap: 18px;
+    }
+
+    .genre-card {
+      position: relative;
+      overflow: hidden;
+      min-height: 280px;
+      padding: 22px;
+      border-radius: var(--radius-xl);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 32%),
+        var(--genre-bg, linear-gradient(135deg, #182133, #0b101a));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: var(--shadow);
+      transition: transform 0.24s ease, border-color 0.24s ease;
+    }
+
+    .genre-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    .genre-card h3 {
+      margin: 10px 0 8px;
+      font-size: 1.42rem;
+    }
+
+    .genre-card p {
+      margin: 0;
+      color: rgba(245, 247, 251, 0.76);
+      line-height: 1.7;
+      max-width: 42ch;
+    }
+
+    .genre-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .genre-list span {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      width: fit-content;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: rgba(245, 247, 251, 0.92);
+    }
+
+    .genre-glow {
+      position: absolute;
+      inset: auto -30% -40% auto;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 77, 90, 0.4), transparent 64%);
+      pointer-events: none;
+    }
+
+    .spotlight {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .spotlight-panel {
+      position: relative;
+      overflow: hidden;
+      padding: 24px;
+      border-radius: var(--radius-xl);
+      background:
+        linear-gradient(135deg, rgba(255, 77, 90, 0.2), rgba(124, 92, 255, 0.12)),
+        rgba(12, 16, 27, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: var(--shadow);
+    }
+
+    .spotlight-panel::after {
+      content: "";
+      position: absolute;
+      inset: auto -18% -32% auto;
+      width: 360px;
+      height: 360px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.16), transparent 66%);
+      pointer-events: none;
+    }
+
+    .spotlight h3 {
+      margin: 8px 0 10px;
+      font-size: clamp(1.55rem, 3vw, 2.2rem);
+      letter-spacing: -0.03em;
+    }
+
+    .spotlight p {
+      margin: 0;
+      color: rgba(245, 247, 251, 0.78);
+      line-height: 1.75;
+      max-width: 58ch;
+    }
+
+    .spotlight-info {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .spotlight-info .line {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      color: rgba(245, 247, 251, 0.9);
+    }
+
+    .spotlight-info .line strong {
+      min-width: 90px;
+      color: #fff;
+    }
+
+    .today-card {
+      display: grid;
+      grid-template-rows: 1fr auto;
+      min-height: 100%;
+    }
+
+    .today-visual {
+      position: relative;
+      min-height: 340px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      background:
+        radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.16), transparent 22%),
+        linear-gradient(135deg, rgba(255, 139, 61, 0.22), rgba(124, 92, 255, 0.22), rgba(255, 77, 90, 0.22));
+    }
+
+    .today-visual::before {
+      content: "";
+      position: absolute;
+      inset: 16px;
+      border-radius: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: linear-gradient(180deg, rgba(4, 7, 13, 0.06), rgba(4, 7, 13, 0.34));
+    }
+
+    .today-visual > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .today-title {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .today-title h3 {
+      margin: 0;
+      font-size: 1.95rem;
+      letter-spacing: -0.04em;
+    }
+
+    .today-body {
+      padding: 20px 22px 22px;
+      background: rgba(9, 13, 22, 0.96);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .today-body p {
+      margin: 0 0 16px;
+      color: rgba(245, 247, 251, 0.8);
+      line-height: 1.75;
+    }
+
+    .today-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .today-tags span {
+      padding: 9px 11px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: rgba(245, 247, 251, 0.88);
+    }
+
+    .feedback {
+      margin-top: 12px;
+      display: inline-flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .feedback button {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
+      color: rgba(245, 247, 251, 0.86);
+      border-radius: 999px;
+      padding: 8px 12px;
+    }
+
+    .empty-state {
+      padding: 24px;
+      border-radius: var(--radius-xl);
+      border: 1px dashed rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    footer {
+      margin-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(6, 9, 15, 0.74);
+    }
+
+    .footer-inner {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      gap: 18px;
+      padding: 28px 0;
+      color: rgba(245, 247, 251, 0.74);
+    }
+
+    .footer-inner h4 {
+      margin: 0 0 10px;
+      color: #fff;
+    }
+
+    .footer-inner p,
+    .footer-inner a,
+    .footer-inner span {
+      margin: 0;
+      color: rgba(245, 247, 251, 0.72);
+      line-height: 1.7;
+    }
+
+    .footer-links {
+      display: grid;
+      gap: 8px;
+    }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+      padding: 16px 0 28px;
+      color: rgba(245, 247, 251, 0.48);
+      font-size: 0.92rem;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 1080px) {
+      .movie-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .genre-grid, .spotlight, .footer-inner { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+
+    @media (max-width: 720px) {
+      .navbar-inner {
+        flex-wrap: wrap;
+        padding: 12px 0 16px;
+      }
+
+      .nav-actions {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      .search-pill { min-width: 0; flex: 1 1 220px; }
+      .hero-banner { min-height: 640px; padding: 24px; }
+      .hero-stats, .movie-grid { grid-template-columns: 1fr; }
+      .section-head { flex-direction: column; align-items: flex-start; }
+      .chips { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="navbar">
+      <div class="container navbar-inner">
+        <a class="brand" href="#top" aria-label="ReelWave 홈">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span>
+            ReelWave
+            <small>movie curation</small>
+          </span>
+        </a>
+
+        <nav class="nav-links" aria-label="주요 메뉴">
+          <a href="#popular">인기 영화</a>
+          <a href="#genres">장르 추천</a>
+          <a href="#today">오늘의 추천</a>
+          <a href="#footer">문의</a>
+        </nav>
+
+        <div class="nav-actions">
+          <label class="search-pill" aria-label="영화 검색">
+            <span aria-hidden="true">⌕</span>
+            <input id="searchInput" type="search" placeholder="영화, 장르, 분위기 검색" />
+          </label>
+          <button class="ghost-btn" type="button">로그인</button>
+          <button class="solid-btn" type="button" id="scrollToRecommendation">지금 추천 보기</button>
+        </div>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="container">
+          <div class="hero-banner">
+            <div class="hero-copy">
+              <div class="eyebrow">오늘 가장 잘 맞는 영화만 골라주는 추천 플랫폼</div>
+              <h1>취향을 읽는 시네마 큐레이션</h1>
+              <p>
+                수많은 작품 중에서 지금 보고 싶은 한 편을 빠르게 찾을 수 있도록, 분위기와 장르,
+                몰입도와 러닝타임까지 함께 고려한 추천을 제공합니다. 영화관처럼 세련되고,
+                스트리밍 서비스처럼 빠르게 탐색할 수 있는 메인 페이지입니다.
+              </p>
+              <div class="hero-actions">
+                <button class="solid-btn" type="button" id="heroRecommendationBtn">오늘의 추천 보기</button>
+                <button class="ghost-btn" type="button" id="heroGenreBtn">장르별 탐색</button>
+              </div>
+              <div class="hero-stats" aria-label="플랫폼 주요 지표">
+                <div class="stat">
+                  <strong>12K+</strong>
+                  <span>검증된 영화 데이터와 추천 기준</span>
+                </div>
+                <div class="stat">
+                  <strong>24종</strong>
+                  <span>장르 기반 큐레이션과 테마 모음</span>
+                </div>
+                <div class="stat">
+                  <strong>4.9/5</strong>
+                  <span>감성, 몰입도, 완성도를 반영한 추천 점수</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="popular" class="section">
+        <div class="container">
+          <div class="section-head">
+            <div>
+              <h2>인기 영화 카드</h2>
+              <p>현재 반응이 좋은 작품을 한눈에 볼 수 있도록 카드형으로 정리했습니다.</p>
+            </div>
+            <div class="chips" aria-label="인기 영화 필터">
+              <button class="chip is-active" type="button" data-filter="전체">전체</button>
+              <button class="chip" type="button" data-filter="액션">액션</button>
+              <button class="chip" type="button" data-filter="드라마">드라마</button>
+              <button class="chip" type="button" data-filter="스릴러">스릴러</button>
+            </div>
+          </div>
+          <div class="movie-grid" id="popular-grid" aria-live="polite"></div>
+          <div class="empty-state" id="popular-empty" hidden>
+            검색이나 필터 조건에 맞는 영화가 없습니다. 다른 장르를 선택하거나 검색어를 지워 보세요.
+          </div>
+        </div>
+      </section>
+
+      <section id="genres" class="section">
+        <div class="container">
+          <div class="section-head">
+            <div>
+              <h2>장르별 추천</h2>
+              <p>기분과 시청 목적에 맞춰 골라 보기 좋도록 장르별 묶음을 따로 구성했습니다.</p>
+            </div>
+          </div>
+          <div class="genre-grid" id="genre-grid"></div>
+        </div>
+      </section>
+
+      <section id="today" class="section">
+        <div class="container">
+          <div class="section-head">
+            <div>
+              <h2>오늘의 추천 영화</h2>
+              <p>오늘의 분위기에 맞는 한 편을 크게 보여주는 영역입니다. 버튼을 눌러 추천을 바꿀 수 있습니다.</p>
+            </div>
+            <div class="chips" aria-label="추천 제어">
+              <button class="chip is-active" type="button" id="prevToday">이전 추천</button>
+              <button class="chip" type="button" id="nextToday">다음 추천</button>
+            </div>
+          </div>
+          <div class="spotlight" id="todaySpotlight"></div>
+          <div class="feedback" aria-label="추천 피드백">
+            <button type="button" data-feedback="like">이 추천 좋아요</button>
+            <button type="button" data-feedback="save">나중에 보기</button>
+            <button type="button" data-feedback="refresh">다른 추천 보기</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer id="footer">
+      <div class="container footer-inner">
+        <div>
+          <h4>ReelWave</h4>
+          <p>
+            영화 선택 시간을 줄이고, 더 잘 맞는 한 편을 빠르게 찾게 돕는 감성 기반 추천 플랫폼입니다.
+          </p>
+        </div>
+        <div>
+          <h4>바로가기</h4>
+          <div class="footer-links">
+            <a href="#popular">인기 영화</a>
+            <a href="#genres">장르별 추천</a>
+            <a href="#today">오늘의 추천</a>
+          </div>
+        </div>
+        <div>
+          <h4>서비스 안내</h4>
+          <div class="footer-links">
+            <span>브라우저에서 바로 실행 가능</span>
+            <span>반응형 레이아웃 지원</span>
+            <span>외부 CDN 없이 단일 파일 구성</span>
+          </div>
+        </div>
+      </div>
+      <div class="container footer-bottom">
+        <span>© 2026 ReelWave. All rights reserved.</span>
+        <span>Dark cinema UI for movie discovery</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const movies = [
+      {
+        title: "Nebula Run",
+        genre: "SF 액션",
+        tags: ["액션", "SF"],
+        year: "2025",
+        runtime: "128분",
+        rating: 9.2,
+        desc: "거대한 도시를 가로지르는 추격과 미지의 신호를 쫓는 팀의 여정을 장대한 스케일로 담았습니다.",
+        poster: "linear-gradient(135deg, #1b2b4d, #0a1020 56%, #ff8b3d)",
+      },
+      {
+        title: "Paper Moon",
+        genre: "드라마",
+        tags: ["드라마"],
+        year: "2024",
+        runtime: "114분",
+        rating: 8.8,
+        desc: "조용한 관계의 균열과 화해를 섬세하게 포착한 서정적인 이야기로, 감정의 결을 깊게 남깁니다.",
+        poster: "linear-gradient(135deg, #0f172a, #27334f 52%, #7c5cff)",
+      },
+      {
+        title: "Black Harbor",
+        genre: "범죄 스릴러",
+        tags: ["스릴러"],
+        year: "2025",
+        runtime: "122분",
+        rating: 9.0,
+        desc: "항구 도시에서 벌어지는 연쇄 사건과 불안한 진실을 쫓는 이야기를 서늘한 톤으로 구성했습니다.",
+        poster: "linear-gradient(135deg, #111827, #31263e 52%, #ff4d5a)",
+      },
+      {
+        title: "Lumen Club",
+        genre: "로맨스",
+        tags: ["드라마"],
+        year: "2024",
+        runtime: "107분",
+        rating: 8.6,
+        desc: "우연한 만남이 만들어내는 따뜻한 여운을 세련된 색감과 리듬감 있는 편집으로 표현합니다.",
+        poster: "linear-gradient(135deg, #2f1e3d, #151a2f 54%, #ff8b3d)",
+      },
+      {
+        title: "Iron Echo",
+        genre: "액션",
+        tags: ["액션"],
+        year: "2023",
+        runtime: "119분",
+        rating: 8.9,
+        desc: "거친 추격전과 도시의 야경을 결합한 강렬한 액션물로, 시원한 속도감을 전면에 둡니다.",
+        poster: "linear-gradient(135deg, #1a2236, #0f1422 58%, #ff4d5a)",
+      },
+      {
+        title: "Silent Harbor",
+        genre: "스릴러",
+        tags: ["스릴러", "드라마"],
+        year: "2024",
+        runtime: "116분",
+        rating: 8.7,
+        desc: "작은 항구 마을에서 조금씩 드러나는 비밀과 심리전이 차분하게 압력을 높여 갑니다.",
+        poster: "linear-gradient(135deg, #14213d, #0f1626 52%, #7c5cff)",
+      },
+      {
+        title: "Golden Hour",
+        genre: "드라마",
+        tags: ["드라마"],
+        year: "2025",
+        runtime: "101분",
+        rating: 8.5,
+        desc: "삶의 전환점에 선 인물들이 서로를 비추는 순간을 따뜻하고 절제된 시선으로 보여줍니다.",
+        poster: "linear-gradient(135deg, #3a2d1f, #151b27 52%, #ff8b3d)",
+      },
+      {
+        title: "Edge of Dawn",
+        genre: "액션",
+        tags: ["액션", "스릴러"],
+        year: "2025",
+        runtime: "124분",
+        rating: 9.1,
+        desc: "새벽 도시를 배경으로 한 집요한 추적전과 반전 구성이 빠른 템포로 이어집니다.",
+        poster: "linear-gradient(135deg, #111827, #1d2d4f 52%, #ff4d5a)",
+      },
+    ];
+
+    const genres = [
+      {
+        title: "몰입형 스릴러",
+        copy: "긴장감이 서서히 고조되고, 반전과 서사의 힘으로 끝까지 끌고 가는 작품을 모았습니다.",
+        items: ["심리전", "미스터리", "반전 중심", "밤에 보기 좋은 작품"],
+        bg: "linear-gradient(135deg, rgba(255,77,90,0.24), rgba(19,24,38,0.98) 62%, rgba(124,92,255,0.18))",
+      },
+      {
+        title: "감성 드라마",
+        copy: "일상의 여운, 관계의 균열, 섬세한 감정선을 선호하는 관객에게 적합한 추천 묶음입니다.",
+        items: ["서정적인 톤", "인물 중심", "잔잔한 전개"],
+        bg: "linear-gradient(135deg, rgba(124,92,255,0.20), rgba(16,20,31,0.98) 60%, rgba(255,139,61,0.12))",
+      },
+      {
+        title: "에너지 액션",
+        copy: "빠른 전개와 강한 비주얼, 시원한 탈출감을 중요하게 생각하는 날에 고르기 좋은 섹션입니다.",
+        items: ["속도감", "대작 스케일", "카타르시스"],
+        bg: "linear-gradient(135deg, rgba(255,139,61,0.22), rgba(16,20,31,0.98) 60%, rgba(255,77,90,0.16))",
+      },
+    ];
+
+    const todayMovies = [
+      {
+        title: "Midnight Signal",
+        score: "8.9",
+        tag: "Editor’s Pick",
+        description: "미스터리한 도시의 밤을 배경으로, 서로 다른 선택이 하나의 결말로 수렴하는 감각적인 스릴러입니다.",
+        reason: "정교한 연출과 점진적 긴장감이 돋보여서, 집중해서 한 편 보기 좋은 작품입니다.",
+        points: ["스릴러", "서스펜스", "110분", "몰입형"],
+        meta: [
+          ["관람 포인트", "정교한 연출과 점진적 긴장감"],
+          ["추천 상황", "집중해서 한 편 몰아보고 싶을 때"],
+          ["비슷한 톤", "네온 필름 누아르, 심리 스릴러"],
+        ],
+      },
+      {
+        title: "Warm Front",
+        score: "8.4",
+        tag: "Mood Match",
+        description: "부드러운 대화와 계절감 있는 화면이 조용한 위로를 남기는 감성 드라마입니다.",
+        reason: "오늘처럼 차분한 분위기에는 강한 자극보다 잔잔한 감정선이 더 잘 맞습니다.",
+        points: ["드라마", "힐링", "103분", "감성"],
+        meta: [
+          ["관람 포인트", "부드러운 대화와 섬세한 표정"],
+          ["추천 상황", "하루를 천천히 마무리하고 싶을 때"],
+          ["비슷한 톤", "계절감 있는 로드 무비"],
+        ],
+      },
+      {
+        title: "Pulse Point",
+        score: "9.0",
+        tag: "Fast Track",
+        description: "짧은 시간 안에 확실한 카타르시스를 주는 고밀도 액션 영화입니다.",
+        reason: "집중력이 필요한 날, 전개가 빠른 작품이 몰입을 끌어올립니다.",
+        points: ["액션", "전개 빠름", "119분", "강렬"],
+        meta: [
+          ["관람 포인트", "속도감 있는 액션과 큰 화면 비주얼"],
+          ["추천 상황", "답답함 없이 시원한 전개가 필요할 때"],
+          ["비슷한 톤", "도심 추격, 하이컨셉 액션"],
+        ],
+      },
+    ];
+
+    const popularGrid = document.getElementById("popular-grid");
+    const popularEmpty = document.getElementById("popular-empty");
+    const genreGrid = document.getElementById("genre-grid");
+    const todaySpotlight = document.getElementById("todaySpotlight");
+    const searchInput = document.getElementById("searchInput");
+    const filterButtons = Array.from(document.querySelectorAll("[data-filter]"));
+    const feedbackButtons = Array.from(document.querySelectorAll("[data-feedback]"));
+    const scrollToRecommendation = document.getElementById("scrollToRecommendation");
+    const heroRecommendationBtn = document.getElementById("heroRecommendationBtn");
+    const heroGenreBtn = document.getElementById("heroGenreBtn");
+    const prevToday = document.getElementById("prevToday");
+    const nextToday = document.getElementById("nextToday");
+
+    let activeFilter = "전체";
+    let activeSearch = "";
+    let todayIndex = 0;
+
+    function movieMatches(movie) {
+      const searchText = activeSearch.trim().toLowerCase();
+      const title = movie.title.toLowerCase();
+      const genre = movie.genre.toLowerCase();
+      const tags = movie.tags.join(" ").toLowerCase();
+      const matchesFilter = activeFilter === "전체" || movie.tags.includes(activeFilter);
+      const matchesSearch = !searchText || [title, genre, tags, movie.desc.toLowerCase()].some((value) => value.includes(searchText));
+      return matchesFilter && matchesSearch;
+    }
+
+    function renderPopularMovies() {
+      const visibleMovies = movies.filter(movieMatches);
+
+      popularGrid.innerHTML = visibleMovies.map((movie) => `
+        <article class="card">
+          <div class="poster" style="--poster: ${movie.poster}">
+            <div class="poster-content">
+              <span class="badge">${movie.genre}</span>
+              <div class="poster-title">
+                <strong>${movie.title}</strong>
+                <span>${movie.year} · ${movie.runtime}</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="rating-row">
+              <div class="meta-row">
+                <span class="meta-pill">${movie.genre}</span>
+                <span class="meta-pill">${movie.runtime}</span>
+              </div>
+              <div class="rating">★ ${movie.rating.toFixed(1)}</div>
+            </div>
+            <p>${movie.desc}</p>
+          </div>
+        </article>
+      `).join("");
+
+      popularEmpty.hidden = visibleMovies.length !== 0;
+      popularGrid.hidden = visibleMovies.length === 0;
+    }
+
+    function renderGenres() {
+      genreGrid.innerHTML = genres.map((genre) => `
+        <article class="genre-card" style="--genre-bg: ${genre.bg};">
+          <div class="badge">Genre Pick</div>
+          <h3>${genre.title}</h3>
+          <p>${genre.copy}</p>
+          <div class="genre-list">
+            ${genre.items.map((item) => `<span>• ${item}</span>`).join("")}
+          </div>
+          <div class="genre-glow" aria-hidden="true"></div>
+        </article>
+      `).join("");
+    }
+
+    function renderToday(index) {
+      const movie = todayMovies[index];
+      todaySpotlight.innerHTML = `
+        <article class="spotlight-panel today-card">
+          <div class="today-visual">
+            <div class="badge">${movie.tag}</div>
+            <div class="today-title">
+              <h3>${movie.title}</h3>
+              <span class="badge">${movie.score}</span>
+            </div>
+            <p>${movie.description}</p>
+          </div>
+          <div class="today-body">
+            <p>${movie.reason}</p>
+            <div class="today-tags">
+              ${movie.points.map((point) => `<span>${point}</span>`).join("")}
+            </div>
+          </div>
+        </article>
+
+        <aside class="spotlight-panel">
+          <div class="eyebrow">오늘 이 작품을 고른 이유</div>
+          <h3>취향 기반 추천 안내</h3>
+          <p>${movie.description}</p>
+          <div class="spotlight-info">
+            ${movie.meta.map(([label, value]) => `
+              <div class="line">
+                <strong>${label}</strong>
+                <span>${value}</span>
+              </div>
+            `).join("")}
+          </div>
+        </aside>
+      `;
+    }
+
+    function setFilter(filter) {
+      activeFilter = filter;
+      filterButtons.forEach((button) => {
+        button.classList.toggle("is-active", button.dataset.filter === filter);
+      });
+      renderPopularMovies();
+    }
+
+    filterButtons.forEach((button) => {
+      button.addEventListener("click", () => setFilter(button.dataset.filter));
+    });
+
+    searchInput.addEventListener("input", (event) => {
+      activeSearch = event.target.value;
+      renderPopularMovies();
+    });
+
+    function moveToday(direction) {
+      todayIndex = (todayIndex + direction + todayMovies.length) % todayMovies.length;
+      renderToday(todayIndex);
+    }
+
+    prevToday.addEventListener("click", () => moveToday(-1));
+    nextToday.addEventListener("click", () => moveToday(1));
+    heroRecommendationBtn.addEventListener("click", () => {
+      document.getElementById("today").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    scrollToRecommendation.addEventListener("click", () => {
+      document.getElementById("today").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    heroGenreBtn.addEventListener("click", () => {
+      document.getElementById("genres").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    feedbackButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        if (button.dataset.feedback === "refresh") {
+          moveToday(1);
+        }
+      });
+    });
+
+    renderPopularMovies();
+    renderGenres();
+    renderToday(todayIndex);
+  </script>
+</body>
+</html>
