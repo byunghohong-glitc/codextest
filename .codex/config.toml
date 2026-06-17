@@ -1,0 +1,66 @@
+# Codex가 작업에 사용할 기본 모델을 정한다.
+# 현재 `gpt-5.4-mini`는 빠른 응답과 가벼운 작업에 맞춘 값이다.
+# 대안으로는 더 강한 상위 모델과 더 작은 변형이 있을 수 있다.
+# 값을 높이면 추론 품질은 좋아지지만 속도와 비용이 늘 수 있다.
+model = "gpt-5.4-mini"
+
+# 일반 작업에서 사용할 추론 강도를 정한다.
+# `medium`은 속도와 품질 사이의 균형을 맞춘 값이다.
+# 보통은 `low`, `medium`, `high` 같은 단계가 있다.
+# 값을 높이면 더 신중해지지만 실행 시간도 길어진다.
+model_reasoning_effort = "medium"
+
+# 계획 수립 단계에서 사용할 추론 강도를 정한다.
+# `high`는 작업 분해와 안전한 실행 계획을 더 꼼꼼히 만든다.
+# 보통은 `low`, `medium`, `high` 같은 단계가 있다.
+# 값을 낮추면 빨라지지만 계획의 촘촘함은 줄 수 있다.
+plan_mode_reasoning_effort = "high"
+
+# Codex가 파일 시스템을 어느 정도까지 수정할 수 있는지 정한다.
+# `workspace-write`는 현재 프로젝트 안에서만 읽기/쓰기를 허용하는 보수적 설정이다.
+# 대안으로는 더 제한적인 읽기 전용과 더 넓은 권한 모드가 있을 수 있다.
+# 값을 넓히면 편의성은 늘지만 실수로 인한 영향 범위도 커진다.
+sandbox_mode = "workspace-write"
+
+# 작업 전 확인이 필요한지 정한다.
+# `on-request`는 위험한 명령이나 쓰기 작업을 실행하기 전에 확인을 요청한다.
+# 대안으로는 더 엄격하거나 더 자동화된 승인 방식이 있을 수 있다.
+# 값을 느슨하게 하면 자동성은 높아지지만 통제는 약해진다.
+approval_policy = "on-request"
+
+[agents]
+# 동시에 돌릴 수 있는 에이전트 수를 정한다.
+# `4`는 병렬성을 확보하면서도 과도한 경쟁을 피하는 중간값이다.
+# 더 큰 값은 처리량을 높이지만 자원 사용과 복잡도가 늘 수 있다.
+# 더 작은 값은 안정적이지만 여러 작업을 동시에 처리하기 어렵다.
+max_threads = 4
+
+# 한 작업이 내려갈 수 있는 에이전트 깊이를 정한다.
+# `1`은 현재 단계에서만 처리하게 하여 구조를 단순하게 유지한다.
+# 더 큰 값은 하위 작업을 더 많이 쪼갤 수 있다.
+# 값을 높이면 유연해지지만 실행 흐름이 복잡해질 수 있다.
+max_depth = 1
+
+# 한 작업이 유지될 수 있는 최대 실행 시간을 초 단위로 정한다.
+# `1800`은 30분 동안 작업을 허용한다.
+# 더 큰 값은 긴 작업에 유리하고, 더 작은 값은 빨리 실패하게 만든다.
+# 값을 낮추면 정체를 줄일 수 있고, 높이면 대형 작업을 버티기 쉽다.
+job_max_runtime_seconds = 1800
+
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp"]
+startup_timeout_sec = 20
+required = false
+
+[mcp_servers.firecrawl]
+command = "powershell.exe"
+args = ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".codex/mcp/firecrawl.ps1"]
+startup_timeout_sec = 20
+required = false
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["-y", "@playwright/mcp@latest"]
+startup_timeout_sec = 20
+required = false

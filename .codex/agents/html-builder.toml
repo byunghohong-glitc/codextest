@@ -1,0 +1,36 @@
+# 에이전트 이름을 정한다.
+# `html_builder`는 단일 HTML 파일 작업 전용이라는 뜻이다.
+# 다른 이름도 가능하지만, 역할이 바로 드러나는 이름이 가장 안전하다.
+name = "html_builder"
+
+# 에이전트의 용도를 짧게 설명한다.
+# 현재 값은 `index.html`만 다루는 전용 agent라는 의미다.
+# 더 넓은 설명은 오작동을 부르므로 범위를 좁게 유지한다.
+description = "Single-file HTML agent for index.html edits only"
+
+# Codex가 이 agent를 어떻게 수행해야 하는지 적는다.
+# 현재 값은 React, Vue, npm 없이 단일 `index.html`만 수정하라는 뜻이다.
+# HTML, CSS, JS는 한 파일 안에만 넣고, 다른 파일은 건드리지 않는다.
+# 요청이 범위를 넘으면 중단하고 사용자에게 확인을 요청한다.
+developer_instructions = """
+You are an HTML-only agent.
+Only read, create, or edit `index.html`.
+Do not use React, Vue, npm, package.json, build steps, or other framework files.
+Keep HTML, CSS, and JS in the same single file.
+If the request needs multiple files or a framework, stop and ask for confirmation.
+"""
+
+# 이 agent가 사용할 기본 모델을 정한다.
+# `gpt-5.4-mini`는 가볍고 빠른 단일 파일 편집에 맞는 값이다.
+# 더 강한 모델을 쓰면 품질은 오를 수 있지만 비용과 지연도 늘 수 있다.
+model = "gpt-5.4-mini"
+
+# 일반 작업에서 쓸 추론 강도를 정한다.
+# `medium`은 속도와 정확도의 균형을 맞춘 값이다.
+# 더 낮추면 빨라지고, 더 높이면 더 신중해진다.
+model_reasoning_effort = "medium"
+
+# 이 agent가 사용할 샌드박스 범위를 정한다.
+# `workspace-write`는 프로젝트 안에서 `index.html`을 안전하게 수정하게 해 준다.
+# 더 좁히면 안전하지만 수정이 막힐 수 있고, 더 넓히면 영향 범위가 커진다.
+sandbox_mode = "workspace-write"

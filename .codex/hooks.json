@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 tools/hooks/auto_commit_index_html.py",
+            "commandWindows": "C:\\Users\\Mink\\AppData\\Local\\Programs\\Python\\Launcher\\py.exe tools/hooks/auto_commit_index_html.py",
+            "statusMessage": "Auto-commit index.html on stop"
+          }
+        ]
+      }
+    ]
+  }
+}

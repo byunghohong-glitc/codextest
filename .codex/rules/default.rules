@@ -1,0 +1,100 @@
+# Default command safety rules for this repository.
+# Keep the allow list small and explicit.
+
+prefix_rule(
+    pattern = ["rg"],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["Get-ChildItem"],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["git", "status"],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["git", "diff"],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["git", "log"],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["pnpm", "typecheck"],
+    decision = "allow",
+)
+
+# Allow only the exact stop-hook wrapper command.
+prefix_rule(
+    pattern = ["py", "tools/hooks/auto_commit_index_html.py"],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["C:\\Users\\Mink\\AppData\\Local\\Programs\\Python\\Launcher\\py.exe", "tools/hooks/auto_commit_index_html.py"],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["python3", "tools/hooks/auto_commit_index_html.py"],
+    decision = "allow",
+)
+
+# Explicitly block write-side Git commands outside the wrapper.
+prefix_rule(
+    pattern = ["git", "add"],
+    decision = "forbidden",
+)
+
+prefix_rule(
+    pattern = ["git", "commit"],
+    decision = "forbidden",
+)
+
+# Block unrelated destructive or external-side-effect commands.
+prefix_rule(
+    pattern = ["rm"],
+    decision = "forbidden",
+)
+
+prefix_rule(
+    pattern = ["del"],
+    decision = "forbidden",
+)
+
+prefix_rule(
+    pattern = ["Remove-Item"],
+    decision = "forbidden",
+)
+
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "forbidden",
+)
+
+prefix_rule(
+    pattern = ["git", "remote"],
+    decision = "forbidden",
+)
+
+prefix_rule(
+    pattern = ["Get-Content", ".env"],
+    decision = "forbidden",
+)
+
+prefix_rule(
+    pattern = ["type", ".env"],
+    decision = "forbidden",
+)
+
+prefix_rule(
+    pattern = ["cat", ".env"],
+    decision = "forbidden",
+)
