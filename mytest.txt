@@ -42,4 +42,3 @@
 `AGENTS.md` 전체 내용을 장황하게 반복하지 말고, 핵심 원칙이 반영되었는지만 확인하라.
 
 
-https://app.notion.com/p/Codex-vs-Claude-Code-35d137efedf6807c80bbd602f42bd752?p=35f137efedf680ae8599d849edbda5dd&pm=s
